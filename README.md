@@ -28,6 +28,3 @@ make
 
 <img src="outputfig/histogram.png" width="400">
 
-## Averaged squared error as function of the dimension
-
-## Required ensemble size as function of the dimension (for a given maximal weight)
