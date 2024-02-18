@@ -1,18 +1,15 @@
-# Snyder_main.py
+# PF_main.py
 '''
-Code to run the simulations from Snyder et al. 2008
-Obstacle to High-Dimensional Particle Filtering
+This code gives the standard particle filter algorithm
 
-This code gives the basic particle filter algorithm and can be copied and modified to compute specific results
-
-By Samantha Kim 2021
+By Samantha S.R. Kim 2024
 '''
 
 # Definitions
 '''
-1) Data model Y = HX + eps
-Y is a (d x 1) vector
-H is a (d x q) matrix
+1) Observational model Y = HX + eps
+Y is a (d x 1) observation vector
+H is a (d x q) matrix for observation operator
 X (truth) is a (q x 1) vector
 eps (not sure) (d x 1) vector
 (Here d=q because Nx=Ny)
@@ -30,15 +27,14 @@ sigma_eps is the identity matrix, Id (d x d).
 p(Y|X) ~ N(HX, Id)
 
 5) The weights are calculated given the eq.(3) in Snyder et al. 2008 and the eq.(4) in Bengtsson et al.2008
+
         exp{-0.5 ||Y - HXi||^2}
 wi =----------------------------
       n
      SUM exp{-0.5 ||Y - HXj||^2}
      j=1
 
-6) Each parameter has a prior distribution
-7) Each parameter has a likelihood (still no sure hox I will compte that though)
-8) 1 vector (Ne x 1) for the weights
+8) 1 vector for the weights (Ne x 1) 
 '''
 
 
@@ -48,13 +44,8 @@ import numpy as np
 from numpy import *
 import math
 
-import matplotlib.pyplot as plt
-import matplotlib.mlab as mlab
 from random import *
 import statistics as stat
-
-from matplotlib import cm
-from mpl_toolkits.mplot3d import Axes3D
 
 import pylab as plt
 import numpy.matlib
@@ -63,21 +54,20 @@ import scipy.integrate as integrate
 from numpy.random import randn
 from numpy.linalg import inv
 
-plot = 1
-
 ## Set the experiment 
-n_run = 400
-save_file = 1
+n_run = 1000
 w_max = np.zeros((3, n_run))
 
 ## Set the dimension
 dim = np.array([10, 30, 100])
 
 ## Set the particle filter
-Ne = 1000
+Ne = 100
+print('Ensemble size Ne=', Ne)
 
 for d in range(len(dim)):
     Ny = dim[d]
+    print('Dimension:', Ny)
 
     ## Initialization
     Id = np.identity(Ny)
@@ -85,9 +75,9 @@ for d in range(len(dim)):
     x_truth =  np.random.multivariate_normal(np.zeros(Ny), Id)
     # Prior
     x_p = np.zeros((Ny, Ne))
-    # Data model
+    # Observation operator
     H = Id
-    # Error distribution
+    # Error distribution in data
     eps = np.zeros((Ny, 1))
     # Data
     y = np.zeros((Ny, 1))
@@ -98,12 +88,11 @@ for d in range(len(dim)):
     
     
     for simu in range(n_run):
-        print(simu)
+        #print(simu)
         ## Create the priors: 1 prior distribution per parameter
         for i in range(Ny):
             # each row is an ensemble of Ne values for the i:th parameter drawn from p(X) too
             x_p[i, :] =  np.random.multivariate_normal(np.zeros(Ne), cov_prior)
-        
         
         ## Create the observations
         # Create a separated vector for eps to save the input errors
@@ -141,42 +130,6 @@ for d in range(len(dim)):
         ## Rapid check with the histograms of the w_max
         w_max[d, simu] = np.max(w)
     
-savetxt('output/weights.txt', w_max)
-
-if plot == 1:
-    # Plot the histogram for the first dimension (Nx=10)
-    fig = plt.figure(figsize=(15,10))
-    n, bins, patches = plt.hist(w_max[0, :], 50, facecolor='green', alpha=50)
-    plt.grid(True)
-    plt.xlim(0, 1)
-    plt.ylim(0, 300)
-    plt.xlabel('max $\mathrm{w_i}$')
-    plt.ylabel('occurrences')
-    plt.savefig('outputfig/histogramNx10_Fig1b.png')
-    
-    
-    fig = plt.figure(figsize=(15,10))
-    n, bins, patches = plt.hist(w_max[1, :], 50, facecolor='green', alpha=50)
-    plt.grid(True)
-    plt.xlim(0, 1)
-    plt.ylim(0, 300)
-    plt.xlabel('max $\mathrm{w_i}$')
-    plt.ylabel('occurrences')
-    plt.savefig('outputfig/histogramNx30_Fig1b.png')
-
-
-    fig = plt.figure(figsize=(15,10))
-    n, bins, patches = plt.hist(w_max[2, :], 50, facecolor='green', alpha=50)
-    plt.grid(True)
-    plt.xlim(0, 1)
-    plt.ylim(0, 300)
-    plt.xlabel('max $\mathrm{w_i}$')
-    plt.ylabel('occurrences')
-    plt.savefig('outputfig/histogramNx100_Fig1b.png')
-
-
-
-
-
+savetxt('output/weights_max.txt', w_max)
 
 
